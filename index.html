@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emoji Mood Music Generation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            width: 100%;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .visualization {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+        }
+        
+        .panel h2 {
+            text-align: center;
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .emoji-display {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 150px;
+            border: 3px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .emoji-display.animated {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .mood-bars {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 10px;
+            border: 3px solid #e0e0e0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow-y: auto;
+        }
+        
+        .mood-bar {
+            margin: 3px 0;
+        }
+        
+        .mood-label {
+            font-size: 0.85em;
+            color: #555;
+            margin-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .bar-container {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .music-output {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            border: 3px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+        
+        .music-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .music-details {
+            text-align: center;
+            width: 100%;
+        }
+        
+        .music-property {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+        
+        .property-label {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+        
+        .property-value {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .emoji-btn {
+            font-size: 60px;
+            padding: 15px 25px;
+            border: none;
+            background: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .emoji-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        .emoji-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Emoji-Based Music Generation System 🎵</h1>
+        
+        <div class="visualization">
+            <div class="panel">
+                <h2>Input Emoji</h2>
+                <div class="emoji-display animated" id="inputEmoji">😊</div>
+            </div>
+            
+            <div class="panel">
+                <h2>Mood Analysis</h2>
+                <div class="mood-bars">
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>😊 Happy</span>
+                            <span id="happy-val">85%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="happy-bar" style="width: 85%; background: linear-gradient(90deg, #ffd700, #ffed4e);"></div>
+                        </div>
+                    </div>
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>😢 Sad</span>
+                            <span id="sad-val">10%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="sad-bar" style="width: 10%; background: linear-gradient(90deg, #4a90e2, #7cb3e8);"></div>
+                        </div>
+                    </div>
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>😠 Angry</span>
+                            <span id="angry-val">5%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="angry-bar" style="width: 5%; background: linear-gradient(90deg, #ff4757, #ff6b7a);"></div>
+                        </div>
+                    </div>
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>😌 Calm</span>
+                            <span id="calm-val">70%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="calm-bar" style="width: 70%; background: linear-gradient(90deg, #5f9ea0, #7fc7c9);"></div>
+                        </div>
+                    </div>
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>💕 Romantic</span>
+                            <span id="romantic-val">50%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="romantic-bar" style="width: 50%; background: linear-gradient(90deg, #ff69b4, #ff8dc7);"></div>
+                        </div>
+                    </div>
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>🤩 Excited</span>
+                            <span id="excited-val">40%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="excited-bar" style="width: 40%; background: linear-gradient(90deg, #ff9500, #ffb340);"></div>
+                        </div>
+                    </div>
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>⚡ Energetic</span>
+                            <span id="energetic-val">60%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="energetic-bar" style="width: 60%; background: linear-gradient(90deg, #ff6348, #ff8562);"></div>
+                        </div>
+                    </div>
+                    <div class="mood-bar">
+                        <div class="mood-label">
+                            <span>😴 Sleepy</span>
+                            <span id="sleepy-val">20%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="sleepy-bar" style="width: 20%; background: linear-gradient(90deg, #9b59b6, #b57dbd);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h2>Generated Music</h2>
+                <div class="music-output">
+                    <div class="music-icon">🎶</div>
+                    <div class="music-details">
+                        <div class="music-property">
+                            <div class="property-label">Tempo</div>
+                            <div class="property-value" id="tempo">120 BPM</div>
+                        </div>
+                        <div class="music-property">
+                            <div class="property-label">Key</div>
+                            <div class="property-value" id="key">C Major</div>
+                        </div>
+                        <div class="music-property">
+                            <div class="property-label">Style</div>
+                            <div class="property-value" id="style">Upbeat Pop</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="emoji-btn" onclick="analyzeEmoji('😊', {happy: 85, sad: 10, angry: 5, calm: 70, romantic: 50, excited: 40, energetic: 60, sleepy: 20}, {tempo: '120 BPM', key: 'C Major', style: 'Upbeat Pop'})">😊</button>
+            <button class="emoji-btn" onclick="analyzeEmoji('😢', {happy: 15, sad: 80, angry: 10, calm: 50, romantic: 40, excited: 10, energetic: 20, sleepy: 45}, {tempo: '70 BPM', key: 'D Minor', style: 'Melancholic Ballad'})">😢</button>
+            <button class="emoji-btn" onclick="analyzeEmoji('😠', {happy: 10, sad: 20, angry: 85, calm: 15, romantic: 5, excited: 30, energetic: 90, sleepy: 10}, {tempo: '140 BPM', key: 'E Minor', style: 'Aggressive Rock'})">😠</button>
+            <button class="emoji-btn" onclick="analyzeEmoji('😴', {happy: 30, sad: 25, angry: 5, calm: 90, romantic: 30, excited: 5, energetic: 10, sleepy: 95}, {tempo: '60 BPM', key: 'A Major', style: 'Ambient Chill'})">😴</button>
+            <button class="emoji-btn" onclick="analyzeEmoji('🥳', {happy: 95, sad: 5, angry: 5, calm: 20, romantic: 35, excited: 95, energetic: 95, sleepy: 5}, {tempo: '130 BPM', key: 'G Major', style: 'Dance Party'})">🥳</button>
+            <button class="emoji-btn" onclick="analyzeEmoji('😱', {happy: 20, sad: 40, angry: 30, calm: 10, romantic: 5, excited: 70, energetic: 85, sleepy: 10}, {tempo: '150 BPM', key: 'F Minor', style: 'Intense Thriller'})">😱</button>
+            <button class="emoji-btn" onclick="analyzeEmoji('😍', {happy: 80, sad: 15, angry: 5, calm: 60, romantic: 95, excited: 65, energetic: 50, sleepy: 20}, {tempo: '90 BPM', key: 'E Major', style: 'Romantic Jazz'})">😍</button>
+            <button class="emoji-btn" onclick="analyzeEmoji('🤗', {happy: 75, sad: 10, angry: 5, calm: 70, romantic: 60, excited: 50, energetic: 45, sleepy: 25}, {tempo: '100 BPM', key: 'F Major', style: 'Warm Acoustic'})">🤗</button>
+        </div>
+    </div>
+    
+    <script>
+        function analyzeEmoji(emoji, moods, music) {
+            document.getElementById('inputEmoji').textContent = emoji;
+            
+            document.getElementById('happy-bar').style.width = moods.happy + '%';
+            document.getElementById('happy-val').textContent = moods.happy + '%';
+            
+            document.getElementById('sad-bar').style.width = moods.sad + '%';
+            document.getElementById('sad-val').textContent = moods.sad + '%';
+            
+            document.getElementById('angry-bar').style.width = moods.angry + '%';
+            document.getElementById('angry-val').textContent = moods.angry + '%';
+            
+            document.getElementById('calm-bar').style.width = moods.calm + '%';
+            document.getElementById('calm-val').textContent = moods.calm + '%';
+            
+            document.getElementById('romantic-bar').style.width = moods.romantic + '%';
+            document.getElementById('romantic-val').textContent = moods.romantic + '%';
+            
+            document.getElementById('excited-bar').style.width = moods.excited + '%';
+            document.getElementById('excited-val').textContent = moods.excited + '%';
+            
+            document.getElementById('energetic-bar').style.width = moods.energetic + '%';
+            document.getElementById('energetic-val').textContent = moods.energetic + '%';
+            
+            document.getElementById('sleepy-bar').style.width = moods.sleepy + '%';
+            document.getElementById('sleepy-val').textContent = moods.sleepy + '%';
+            
+            document.getElementById('tempo').textContent = music.tempo;
+            document.getElementById('key').textContent = music.key;
+            document.getElementById('style').textContent = music.style;
+        }
+    </script>
+</body>
+</html>
